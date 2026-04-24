@@ -276,13 +276,33 @@ const VideoSystemModel = (function () {
                         throw new ProductionNotExistsException(production);
                     }
 
-                    // Elimina la producción de todas las categorías
+                    // Elimina la relación de todas las categorías
                     for (const catData of this.#categories.values()) {
                         const index = catData.productions.indexOf(
                             production.title,
                         );
                         if (index !== -1) {
                             catData.productions.splice(index, 1);
+                        }
+                    }
+
+                    // Elimina la relación de todos los directores
+                    for (const dirData of this.#directors.values()) {
+                        const index = dirData.productions.indexOf(
+                            production.title,
+                        );
+                        if (index !== -1) {
+                            dirData.productions.splice(index, 1);
+                        }
+                    }
+
+                    // Elimina la relación de todos los actores
+                    for (const actData of this.#actors.values()) {
+                        const index = actData.productions.indexOf(
+                            production.title,
+                        );
+                        if (index !== -1) {
+                            actData.productions.splice(index, 1);
                         }
                     }
 

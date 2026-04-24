@@ -10,7 +10,8 @@ const historyActions = {
     showDirector: (event) =>
         VideoSystemApp.handleShowDirector(event.state.director),
     showActor: (event) => VideoSystemApp.handleShowActor(event.state.actor),
-    newProduction: (event) => VideoSystemApp.handleNewProductionForm(),
+    newProduction: (event) => VideoSystemApp.handleShowNewProductionForm(),
+    deleteProduction: (event) => VideoSystemApp.handleShowDeleteProductionForm(),
 };
 
 /** Manejador para recuperar el estado de la página al navegar por el historial */

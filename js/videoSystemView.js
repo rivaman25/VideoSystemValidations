@@ -1,4 +1,7 @@
-import { newProductionValidation } from "./validation.js";
+import {
+    newProductionValidation,
+    deleteProductionValidation,
+} from "./validation.js";
 
 class VideoSystemView {
     #detailsWindows = new Map(); // Registra las ventanas que se abren
@@ -611,7 +614,7 @@ class VideoSystemView {
                         <div class="col-md-6 col-xl-3 mb-2">
                             <label for="npType" class="form-label">Tipo de producción *</label>
                             <select id="npType" class="form-select" name="npType" required>
-                                <option value ="" selected>Selecciona el tipo de producción</option>
+                                <option value ="" selected>Selecciona tipo de producción ...</option>
                                 <option value="Movie">Película</option>
                                 <option value="Serie">Serie</option>
                             </select>
@@ -681,6 +684,47 @@ class VideoSystemView {
                         </div>
                         <div class="mb-12">
                             <button class="btn btn-primary" type="submit">Enviar</button>
+                            <button class="btn btn-primary" type="reset">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>`,
+        );
+        this.main.append(container);
+    }
+
+    /** Muestra el formulario para eliminar una producción */
+    showDeleteProductionForm(productions) {
+        this.main.replaceChildren();
+
+        const container = document.createElement("div");
+        container.classList.add("container");
+        container.classList.add("my-3");
+        container.id = "new-production";
+
+        let productionsHtml = "";
+        for (const production of productions) {
+            productionsHtml += `<option value="${production.title}" data-type="${production.type}">
+                ${production.title}</option>`;
+        }
+
+        container.insertAdjacentHTML(
+            "beforeend",
+            `<div class="card mx-0">
+                <div class="card-body">
+                    <h3 class="card-title">Eliminar producción</h3>
+                    <form name="fDeleteProduction" role="form" class="row mt-1 g-3" novalidate>
+                        <div class="col-md-6 mb-2">
+                            <label for="dProductions" class="form-label">Producción *</label>
+                            <select class="form-select" id="dProductions" name="dProductions" aria-label="Producción" required>
+                                <option value="">Selecciona una producción ...</option>
+                                ${productionsHtml}
+                            </select>
+                            <div class="invalid-feedback">La producción es obligatoria.</div>
+                            <div class="valid-feedback">Correcto.</div>
+                        </div>
+                        <div class="mb-12">
+                            <button class="btn btn-primary" type="submit">Eliminar</button>
                             <button class="btn btn-primary" type="reset">Cancelar</button>
                         </div>
                     </form>
@@ -935,8 +979,8 @@ class VideoSystemView {
     }
 
     bindShowNewProductionForm(handler) {
-        const newCategoryLink = document.getElementById("lnewProduction");
-        newCategoryLink.addEventListener("click", (event) => {
+        const newProductionLink = document.getElementById("lnewProduction");
+        newProductionLink.addEventListener("click", (event) => {
             this.#executeHandler(
                 handler,
                 [],
@@ -950,6 +994,24 @@ class VideoSystemView {
 
     bindNewProductionValidation(handler) {
         newProductionValidation(handler);
+    }
+
+    bindShowDeleteProductionForm(handler) {
+        const deleteProductionLink = document.getElementById("ldelProduction");
+        deleteProductionLink.addEventListener("click", (event) => {
+            this.#executeHandler(
+                handler,
+                [],
+                "#body",
+                { action: "deleteProduction" },
+                "#",
+                event,
+            );
+        });
+    }
+
+    bindDeleteProductionValidation(handler) {
+        deleteProductionValidation(handler);
     }
 }
 

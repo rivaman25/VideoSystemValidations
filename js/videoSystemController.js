@@ -26,7 +26,11 @@ class VideoSystemController {
         this.onProductionRandomList();
         this.#view.showAdminMenu(); // Crea del menú Administración
         // bind para lanzar el formulario de nueva producción, se invoca después de crear el menú Administración
-        this.#view.bindShowNewProductionForm(this.handleNewProductionForm);
+        this.#view.bindShowNewProductionForm(this.handleShowNewProductionForm);
+        // bind para lanzar el formulario para eliminar una producción
+        this.#view.bindShowDeleteProductionForm(
+            this.handleShowDeleteProductionForm,
+        );
     };
 
     /** Método privado para instanciar los objetos */
@@ -676,7 +680,7 @@ class VideoSystemController {
         this.#view.closeDetails();
     };
 
-    handleNewProductionForm = () => {
+    handleShowNewProductionForm = () => {
         this.#view.showNewProductionForm(
             this.#model.directors,
             this.#model.actors,
@@ -731,12 +735,37 @@ class VideoSystemController {
             this.onInit();
 
             this.#view.showToast(
-                "La producción se ha creado correctamente",
+                "La producción se ha creado correctamente.",
                 "success",
             );
         } catch (error) {
             this.#view.showToast(
                 "Error al crear la producción" + error.message,
+                "danger",
+            );
+        }
+    };
+
+    handleShowDeleteProductionForm = () => {
+        this.#view.showDeleteProductionForm(this.#model.productions);
+        this.#view.bindDeleteProductionValidation(this.handleDeleteProduction);
+    };
+
+    handleDeleteProduction = (type, production) => {
+        const prod = this.#model.createProduction(type, production);
+
+        try {
+            this.#model.removeProduction(prod);
+
+            this.onInit();
+
+            this.#view.showToast(
+                "La producción se ha eliminado correctamente.",
+                "success",
+            );
+        } catch (error) {
+            this.#view.showToast(
+                "Error al eliminar la producción" + error.message,
                 "danger",
             );
         }
