@@ -210,8 +210,7 @@ function deleteProductionValidation(handler) {
         if (!isValid) {
             firstInvalidElement.focus();
         } else {
-            const selectedOption = select.options[select.selectedIndex];
-            handler(select.dataset.type, select.value);
+            handler(select.value);
         }
 
         event.preventDefault();
@@ -226,11 +225,6 @@ function deleteProductionValidation(handler) {
             div.classList.add("d-none");
         }
 
-        for (const input of this.querySelectorAll("input")) {
-            input.classList.remove("is-valid");
-            input.classList.remove("is-invalid");
-        }
-
         for (const select of this.querySelectorAll("select")) {
             select.classList.remove("is-valid");
             select.classList.remove("is-invalid");
@@ -242,4 +236,78 @@ function deleteProductionValidation(handler) {
     form.dProductions.addEventListener("change", handleSelectValidation);
 }
 
-export { newProductionValidation, deleteProductionValidation };
+function updateProductionCastValidation(handler) {
+    const form = document.forms.fupdateProductionCast;
+
+    form.setAttribute("novalidate", true);
+
+    form.addEventListener("submit", function (event) {
+        let isValid = true;
+        let firstInvalidElement = null;
+        const productions = this.uProductionsCast;
+        const directors = this.uDirectors;
+
+        if (!this.uDirectors.checkValidity()) {
+            isValid = false;
+            showValidationFeedback(this.uDirectors, false);
+            firstInvalidElement = this.uDirectors;
+        } else {
+            showValidationFeedback(this.uDirectors, true);
+        }
+
+        if (!this.uActors.checkValidity()) {
+            isValid = false;
+            showValidationFeedback(this.uActors, false);
+            firstInvalidElement = this.uActors;
+        } else {
+            showValidationFeedback(this.uActors, true);
+        }
+
+        if (!this.uProductionsCast.checkValidity()) {
+            isValid = false;
+            showValidationFeedback(this.uProductionsCast, false);
+            firstInvalidElement = this.uProductionsCast;
+        } else {
+            showValidationFeedback(this.uProductionsCast, true);
+        }
+
+        if (!isValid) {
+            firstInvalidElement.focus();
+        } else {
+            handler(
+                this.uProductionsCast.value,
+                this.uDirectors.selectedOptions,
+                this.uActors.selectedOptions,
+            );
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+    });
+
+    form.addEventListener("reset", function (event) {
+        for (const div of this.querySelectorAll(
+            "div.valid-feedback, div.invalid-feedback",
+        )) {
+            div.classList.remove("d-block");
+            div.classList.add("d-none");
+        }
+
+        for (const select of this.querySelectorAll("select")) {
+            select.classList.remove("is-valid");
+            select.classList.remove("is-invalid");
+        }
+
+        this.uProductionsCast.focus();
+    });
+
+    form.uProductionsCast.addEventListener("change", handleSelectValidation);
+    form.uDirectors.addEventListener("change", handleSelectValidation);
+    form.uActors.addEventListener("change", handleSelectValidation);
+}
+
+export {
+    newProductionValidation,
+    deleteProductionValidation,
+    updateProductionCastValidation,
+};

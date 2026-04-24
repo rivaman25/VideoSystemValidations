@@ -1,6 +1,7 @@
 import {
     newProductionValidation,
     deleteProductionValidation,
+    updateProductionCastValidation,
 } from "./validation.js";
 
 class VideoSystemView {
@@ -563,7 +564,7 @@ class VideoSystemView {
         );
         suboptions.insertAdjacentHTML(
             "beforeend",
-            '<li><a id="lnewProduct"class="dropdown-item" href="#new-product">Actualizar reparto y dirección</a></li>',
+            '<li><a id="lupdateProductionCast"class="dropdown-item" href="#update-product-cast">Actualizar dirección y reparto</a></li>',
         );
         menuOption.append(suboptions);
         this.menu.append(menuOption);
@@ -700,11 +701,11 @@ class VideoSystemView {
         const container = document.createElement("div");
         container.classList.add("container");
         container.classList.add("my-3");
-        container.id = "new-production";
+        container.id = "delete-production";
 
         let productionsHtml = "";
         for (const production of productions) {
-            productionsHtml += `<option value="${production.title}" data-type="${production.type}">
+            productionsHtml += `<option value="${production.title}">
                 ${production.title}</option>`;
         }
 
@@ -732,6 +733,95 @@ class VideoSystemView {
             </div>`,
         );
         this.main.append(container);
+    }
+
+    /** Muestra el formulario para actualizar los directores y actores de una producción */
+    showUpdateProductionCastForm(productions, directors, actors) {
+        this.main.replaceChildren();
+
+        const container = document.createElement("div");
+        container.classList.add("container");
+        container.classList.add("my-3");
+        container.id = "update-production-cast";
+
+        let productionsHtml = "";
+        for (const prod of productions) {
+            productionsHtml += `<option value="${prod.title}">
+                ${prod.title}</option>`;
+        }
+
+        let directorsHtml = "";
+        for (const director of directors) {
+            directorsHtml += `<option value="${director.name}${director.lastname1}">
+                ${director.name} ${director.lastname1}</option>`;
+        }
+
+        let actorsHtml = "";
+        for (const actor of actors) {
+            actorsHtml += `<option value="${actor.name}${actor.lastname1}">
+                ${actor.name} ${actor.lastname1}</option>`;
+        }
+
+        container.insertAdjacentHTML(
+            "beforeend",
+            `<div class="card mx-0">
+                <div class="card-body">
+                    <h3 class="card-title">Actualizar dirección y reparto</h3>
+                    <form name="fupdateProductionCast" role="form" class="row mt-1 g-3" novalidate>
+                        <div class="col-12 mb-2">
+                            <label for="uProductionsCast" class="form-label">Producción *</label>
+                            <select class="form-select" id="uProductionsCast" name="uProductionsCast" aria-label="Producción" required>
+                                <option value="">Selecciona una producción ...</option>
+                                ${productionsHtml}
+                            </select>
+                            <div class="invalid-feedback">La producción es obligatoria.</div>
+                            <div class="valid-feedback">Correcto.</div>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label for="uDirectors" class="form-label">Dirección *</label>
+                            <select class="form-select" id="uDirectors" name="uDirectors" multiple size="10" aria-label="Direccion" required>
+                                ${directorsHtml}
+                            </select>
+                            <div class="invalid-feedback">El director es obligatorio.</div>
+                            <div class="valid-feedback">Correcto.</div>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label for="uActors" class="form-label">Actores *</label>
+                            <select class="form-select" id="uActors" name="uActors" multiple size="10" aria-label="Actores" required>
+                                ${actorsHtml}
+                            </select>
+                            <div class="invalid-feedback">El actor es obligatorio.</div>
+                            <div class="valid-feedback">Correcto.</div>
+                        </div>
+                        <div class="mb-12">
+                            <button class="btn btn-primary" type="submit">Actualizar</button>
+                            <button class="btn btn-primary" type="reset">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>`,
+        );
+        this.main.append(container);
+    }
+
+    /** Muestra la producción y los directores y actores seleccionados
+     *  (pertencen a la producción seleccionada en el formulario de actualización) */
+    showProductionCast(directorsProduction, actorsProduction) {
+        const directorsSelect = document.getElementById("uDirectors");
+        const directorsOptions = directorsSelect.getElementsByTagName("option");
+        for (const option of directorsOptions) {
+            option.selected = directorsProduction.includes(option.value);
+        }
+        // Lanza el evento change para que se actualicen las validaciones
+        directorsSelect.dispatchEvent(new Event("change"));
+
+        const actorsSelect = document.getElementById("uActors");
+        const actorsOptions = actorsSelect.getElementsByTagName("option");
+        for (const option of actorsOptions) {
+            option.selected = actorsProduction.includes(option.value);
+        }
+        // Lanza el evento change para que se actualicen las validaciones
+        actorsSelect.dispatchEvent(new Event("change"));
     }
 
     /** Muestra un toast con el mensaje y color que se pasan por parámetro  */
@@ -1012,6 +1102,35 @@ class VideoSystemView {
 
     bindDeleteProductionValidation(handler) {
         deleteProductionValidation(handler);
+    }
+
+    bindShowUpdateProductionCastForm(handler) {
+        const updateProductionCastLink = document.getElementById(
+            "lupdateProductionCast",
+        );
+        updateProductionCastLink.addEventListener("click", (event) => {
+            this.#executeHandler(
+                handler,
+                [],
+                "#body",
+                { action: "updateProductionCast" },
+                "#",
+                event,
+            );
+        });
+    }
+
+    /** Actualiza los directores y actores de la producción seleccionada */
+    bindShowProductionCast(handler) {
+        const productionSelect = document.getElementById("uProductionsCast");
+
+        productionSelect.addEventListener("change", (event) => {
+            handler(event.currentTarget.value);
+        });
+    }
+
+    bindUpdateProductionCastValidation(handler) {
+        updateProductionCastValidation(handler);
     }
 }
 

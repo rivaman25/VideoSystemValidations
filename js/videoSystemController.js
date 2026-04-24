@@ -31,6 +31,9 @@ class VideoSystemController {
         this.#view.bindShowDeleteProductionForm(
             this.handleShowDeleteProductionForm,
         );
+        this.#view.bindShowUpdateProductionCastForm(
+            this.handleShowUpdateProductionCastForm,
+        );
     };
 
     /** Método privado para instanciar los objetos */
@@ -601,8 +604,17 @@ class VideoSystemController {
         this.#view.bindShowProduction(this.handleShowProduction);
     };
 
-    handleShowProduction = (productionName) => {
-        const production = this.#model.createProduction("", productionName);
+    handleShowProduction = (title) => {
+        let production;
+        try {
+            production = this.#model.createProduction("", title);
+        } catch (error) {
+            this.#view.showToast(
+                `No se puede mostrar la producción ${title}, ha sido eliminada.`,
+                "danger",
+            );
+            return;
+        }
         const directors = this.#model.getDirectorsProduction(production);
         const actors = this.#model.getCast(production);
         this.#view.showProduction(production, directors, actors);
@@ -680,6 +692,7 @@ class VideoSystemController {
         this.#view.closeDetails();
     };
 
+    /** Muestra el formulario para crear una producción */
     handleShowNewProductionForm = () => {
         this.#view.showNewProductionForm(
             this.#model.directors,
@@ -688,6 +701,7 @@ class VideoSystemController {
         this.#view.bindNewProductionValidation(this.handleCreateProduction);
     };
 
+    // Crea una nueva producción
     handleCreateProduction = (
         type,
         title,
@@ -746,16 +760,18 @@ class VideoSystemController {
         }
     };
 
+    /** Muestra el formulario para eliminar una producción */
     handleShowDeleteProductionForm = () => {
         this.#view.showDeleteProductionForm(this.#model.productions);
         this.#view.bindDeleteProductionValidation(this.handleDeleteProduction);
     };
 
-    handleDeleteProduction = (type, production) => {
-        const prod = this.#model.createProduction(type, production);
+    // Elimina un producción
+    handleDeleteProduction = (title) => {
+        const production = this.#model.createProduction("", title);
 
         try {
-            this.#model.removeProduction(prod);
+            this.#model.removeProduction(production);
 
             this.onInit();
 
@@ -766,6 +782,83 @@ class VideoSystemController {
         } catch (error) {
             this.#view.showToast(
                 "Error al eliminar la producción" + error.message,
+                "danger",
+            );
+        }
+    };
+
+    /** Muestra el formulario para actualizar los directores y actores de una producción */
+    handleShowUpdateProductionCastForm = () => {
+        this.#view.showUpdateProductionCastForm(
+            this.#model.productions,
+            this.#model.directors,
+            this.#model.actors,
+        );
+        // Actualiza los actores y directores cuando se selecciona una producción
+        this.#view.bindShowProductionCast(this.handleShowProductionCast);
+        // Valida el formulario
+        this.#view.bindUpdateProductionCastValidation(
+            this.handleUpdateProductionCast,
+        );
+    };
+
+    /** Obtiene los directores y actores de la producción y los muestra en el formulario */
+    handleShowProductionCast = (title) => {
+        if (title === "") {
+            return;
+        }
+        const production = this.#model.createProduction("", title);
+
+        const directors = Array.from(
+            this.#model.getDirectorsProduction(production),
+            (d) => `${d.name}${d.lastname1}`,
+        );
+        const actors = Array.from(
+            this.#model.getCast(production),
+            (a) => `${a.name}${a.lastname1}`,
+        );
+        this.#view.showProductionCast(directors, actors);
+    };
+
+    /** Actualiza los actores y directores de la producción */
+    handleUpdateProductionCast = (title, directors, actors) => {
+        const production = this.#model.createProduction("", title);
+
+        try {
+            // Deasigna los directores actuales de la producción
+            for (const director of this.#model.getDirectorsProduction(
+                production,
+            )) {
+                this.#model.deassignDirector(director, production);
+            }
+            // Asigna los directores seleccionados a la producción
+            for (const key of directors) {
+                const director = this.#model.createPerson(
+                    "director",
+                    key.value,
+                );
+                this.#model.assignDirector(director, production);
+            }
+
+            // Deasigna los actores actuales de la producción
+            for (const actor of this.#model.getCast(production)) {
+                this.#model.deassignActor(actor, production);
+            }
+            // Asigna los actores seleccionados a la producción
+            for (const key of actors) {
+                const actor = this.#model.createPerson("actor", key.value);
+                this.#model.assignActor(actor, production);
+            }
+
+            this.onInit();
+
+            this.#view.showToast(
+                "La producción se ha actualizado correctamente.",
+                "success",
+            );
+        } catch (error) {
+            this.#view.showToast(
+                "Error al actualizar la producción" + error.message,
                 "danger",
             );
         }
